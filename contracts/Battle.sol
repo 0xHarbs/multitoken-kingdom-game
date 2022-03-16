@@ -44,7 +44,7 @@ contract WarRoom is KingdomFactory {
         _;
     }
 
-    modifier battleInActive(uint256 battleId) {
+    modifier battleInactive(uint256 battleId) {
         require(block.timestamp < battles[battleId].deadline);
         _;
     }

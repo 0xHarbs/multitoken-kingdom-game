@@ -9,6 +9,7 @@ contract MultiTokenFactory is ERC1155, Ownable {
     uint256 public Liutenants = 2;
     uint256 public Commanders = 3;
     uint256 public numOfTokens = 3;
+    uint256 public tokenPrice = 0.01 ether;
     uint256 public numOfStats;
     bool paused;
 
@@ -20,8 +21,8 @@ contract MultiTokenFactory is ERC1155, Ownable {
     mapping(uint256 => Stats) public tokenStats;
 
     constructor() ERC1155("") {
-        _mint(msg.sender, Soldiers, 100000 * 10**18, "");
-        _mint(msg.sender, Liutenants, 10000 * 10**18, "");
+        _mint(address(this), Soldiers, 100000 * 10**18, "");
+        _mint(address(this), Liutenants, 10000 * 10**18, "");
         _mint(msg.sender, Commanders, 1000 * 10**18, "");
     }
 
@@ -40,4 +41,21 @@ contract MultiTokenFactory is ERC1155, Ownable {
         stats.power = _power;
         stats.exists = true;
     }
+
+    function buyTokens(uint256 _tokenId, uint256 _amount) public payable {
+        require(balanceOf(address(this), _tokenId) > 0);
+        require(msg.value > tokenPrice * _amount);
+        safeTransferFrom(address(this), msg.sender, _tokenId, _amount, "");
+    }
+
+    function withdraw() public onlyOwner {
+        address _owner = msg.sender;
+        uint256 _amount = address(this).balance;
+        (bool success, ) = _owner.call{value: _amount}("");
+        require(success, "Failed to send funds");
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }
